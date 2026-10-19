@@ -34,8 +34,8 @@ function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').repla
 function paint(){
  const keywords=new Set('local function return if then else elseif end for while do repeat until break continue and or not nil true false in export type'.split(' '));
  const builtins=new Set('game workspace script print warn pairs ipairs pcall xpcall require select tonumber tostring type typeof assert error math string table task coroutine os utf8'.split(' '));
- const token=/--[^\n]*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b[A-Za-z_]\w*\b|\b\d+(?:\.\d+)?\b/g;
- highlight.innerHTML=escapeHtml(code.value).replace(token,raw=>{
+ const token=/--[^\n]*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b[A-Za-z_]\w*\b|\b\d+(?:\.\d+)?\b|[\s\S]/g;
+ highlight.innerHTML=code.value.replace(token,raw=>{
    const safe=escapeHtml(raw);
    if(raw.startsWith('--')) return '<span class="tok-comment">'+safe+'</span>';
    if(raw.startsWith('"')||raw.startsWith("'")) return '<span class="tok-string">'+safe+'</span>';
