@@ -31,11 +31,28 @@ main{min-width:0;padding:19px;display:flex;flex-direction:column;gap:14px}.top{d
 <script>
 const code=document.querySelector('#code'),nums=document.querySelector('#nums'),highlight=document.querySelector('#highlight'),msg=document.querySelector('#msg'),file=document.querySelector('#file');
 function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function paint(){let s=escapeHtml(code.value);s=s.replace(/(--[^\n]*|(["'])(?:\\.|(?!\2)[^\\])*?\2)/g,(m)=>'<span class="'+(m.startsWith('--')?'tok-comment':'tok-string')+'">'+m+'</span>');s=s.replace(/\b(local|function|return|if|then|else|elseif|end|for|while|do|repeat|until|break|continue|and|or|not|nil|true|false|in|export|type)\b/g,'<span class="tok-key">$1</span>');s=s.replace(/\b(game|workspace|script|print|warn|pairs|ipairs|pcall|xpcall|require|select|tonumber|tostring|type|typeof|assert|error|math|string|table|task|coroutine|os|utf8)\b/g,'<span class="tok-builtin">$1</span>');s=s.replace(/\b\d+(?:\.\d+)?\b/g,'<span class="tok-number">const code=document.querySelector('#code'),nums=document.querySelector('#nums'),msg=document.querySelector('#msg'),file=document.querySelector('#file');
-function lines(){nums.textContent=Array.from({length:code.value.split('\n').length},(_,i)=>i+1).join('\n')}code.addEventListener('input',lines);code.addEventListener('scroll',()=>nums.scrollTop=code.scrollTop);</span>');highlight.innerHTML=s+'\n';}
-function lines(){nums.textContent=Array.from({length:code.value.split('\n').length},(_,i)=>i+1).join('\n');paint()}code.addEventListener('input',lines);code.addEventListener('scroll',()=>{nums.scrollTop=code.scrollTop;highlight.scrollTop=code.scrollTop;highlight.scrollLeft=code.scrollLeft});code.addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();code.setRangeText('  ',code.selectionStart,code.selectionEnd,'end');lines()}});
-function note(t){msg.textContent=t}document.querySelector('#copy').onclick=async()=>{try{await navigator.clipboard.writeText(code.value);note('Copied')}catch{note('Clipboard permission unavailable')}};
-document.querySelector('#open').onclick=document.querySelector('#open2').onclick=()=>file.click();file.onchange=async()=>{const f=file.files[0];if(f){code.value=await f.text();lines();note('Opened '+f.name)}file.value=''};
+function paint(){
+ let s=escapeHtml(code.value);
+ s=s.replace(/(--[^\n]*|(["'])(?:\\.|(?!\2)[^\\])*?\2)/g,m=>'<span class="'+(m.startsWith('--')?'tok-comment':'tok-string')+'">'+m+'</span>');
+ s=s.replace(/\b(local|function|return|if|then|else|elseif|end|for|while|do|repeat|until|break|continue|and|or|not|nil|true|false|in|export|type)\b/g,'<span class="tok-key">$1</span>');
+ s=s.replace(/\b(game|workspace|script|print|warn|pairs|ipairs|pcall|xpcall|require|select|tonumber|tostring|type|typeof|assert|error|math|string|table|task|coroutine|os|utf8)\b/g,'<span class="tok-builtin">$1</span>');
+ s=s.replace(/\b\d+(?:\.\d+)?\b/g,'<span class="tok-number">$&</span>');
+ highlight.innerHTML=s+'\n';
+}
+function lines(){nums.textContent=Array.from({length:code.value.split('\n').length},(_,i)=>i+1).join('\n');paint()}
+code.addEventListener('input',lines);
+code.addEventListener('scroll',()=>{nums.scrollTop=code.scrollTop;highlight.scrollTop=code.scrollTop;highlight.scrollLeft=code.scrollLeft});
+code.addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();code.setRangeText('  ',code.selectionStart,code.selectionEnd,'end');lines()}});
+function note(t){msg.textContent=t}
+document.querySelector('#copy').onclick=async()=>{try{await navigator.clipboard.writeText(code.value);note('Copied')}catch{note('Clipboard permission unavailable')}};
+document.querySelector('#open').onclick=document.querySelector('#open2').onclick=()=>file.click();
+file.onchange=async()=>{const f=file.files[0];if(f){code.value=await f.text();lines();note('Opened '+f.name)}file.value=''};
+document.querySelector('#save').onclick=()=>{const a=document.createElement('a'),u=URL.createObjectURL(new Blob([code.value],{type:'text/plain'}));a.href=u;a.download='script.lua';a.click();URL.revokeObjectURL(u);note('Saved script.lua')};
+document.querySelector('#run').onclick=()=>note('Preview only — no execution backend is connected');
+document.querySelector('#font').onchange=e=>code.style.fontSize=e.target.value+'px';
+document.querySelector('#wrap').onchange=e=>{code.style.whiteSpace=e.target.checked?'pre-wrap':'pre';highlight.style.whiteSpace=code.style.whiteSpace};
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===b));['editor','files','settings'].forEach(p=>document.querySelector('#'+p+'Page').style.display=p===b.dataset.page?(p==='editor'?'flex':'block'):'none');document.querySelector('#heading').textContent=b.dataset.page.toUpperCase()});
+lines();note('Opened '+f.name)}file.value=''};
 document.querySelector('#save').onclick=()=>{const a=document.createElement('a'),u=URL.createObjectURL(new Blob([code.value],{type:'text/plain'}));a.href=u;a.download='script.lua';a.click();URL.revokeObjectURL(u);note('Saved script.lua')};
 document.querySelector('#run').onclick=()=>note('Preview only — no execution backend is connected');
 document.querySelector('#font').onchange=e=>code.style.fontSize=e.target.value+'px';document.querySelector('#wrap').onchange=e=>code.style.whiteSpace=e.target.checked?'pre-wrap':'pre';highlight.style.whiteSpace=code.style.whiteSpace;
