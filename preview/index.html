@@ -32,12 +32,18 @@ main{min-width:0;padding:19px;display:flex;flex-direction:column;gap:14px}.top{d
 const code=document.querySelector('#code'),nums=document.querySelector('#nums'),highlight=document.querySelector('#highlight'),msg=document.querySelector('#msg'),file=document.querySelector('#file');
 function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function paint(){
- let s=escapeHtml(code.value);
- s=s.replace(/(--[^\n]*|(["'])(?:\\.|(?!\2)[^\\])*?\2)/g,m=>'<span class="'+(m.startsWith('--')?'tok-comment':'tok-string')+'">'+m+'</span>');
- s=s.replace(/\b(local|function|return|if|then|else|elseif|end|for|while|do|repeat|until|break|continue|and|or|not|nil|true|false|in|export|type)\b/g,'<span class="tok-key">$1</span>');
- s=s.replace(/\b(game|workspace|script|print|warn|pairs|ipairs|pcall|xpcall|require|select|tonumber|tostring|type|typeof|assert|error|math|string|table|task|coroutine|os|utf8)\b/g,'<span class="tok-builtin">$1</span>');
- s=s.replace(/\b\d+(?:\.\d+)?\b/g,'<span class="tok-number">$&</span>');
- highlight.innerHTML=s+'\n';
+ const keywords=new Set('local function return if then else elseif end for while do repeat until break continue and or not nil true false in export type'.split(' '));
+ const builtins=new Set('game workspace script print warn pairs ipairs pcall xpcall require select tonumber tostring type typeof assert error math string table task coroutine os utf8'.split(' '));
+ const token=/--[^\n]*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b[A-Za-z_]\w*\b|\b\d+(?:\.\d+)?\b/g;
+ highlight.innerHTML=escapeHtml(code.value).replace(token,raw=>{
+   const safe=escapeHtml(raw);
+   if(raw.startsWith('--')) return '<span class="tok-comment">'+safe+'</span>';
+   if(raw.startsWith('"')||raw.startsWith("'")) return '<span class="tok-string">'+safe+'</span>';
+   if(keywords.has(raw)) return '<span class="tok-key">'+safe+'</span>';
+   if(builtins.has(raw)) return '<span class="tok-builtin">'+safe+'</span>';
+   if(/^\d/.test(raw)) return '<span class="tok-number">'+safe+'</span>';
+   return safe;
+ })+'\n';
 }
 function lines(){nums.textContent=Array.from({length:code.value.split('\n').length},(_,i)=>i+1).join('\n');paint()}
 code.addEventListener('input',lines);
